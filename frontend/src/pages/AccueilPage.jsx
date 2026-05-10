@@ -1,14 +1,40 @@
+// src/pages/AccueilPage.jsx
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 export default function AccueilPage() {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
+  const [stats, setStats] = useState({
+    etudiants:    0,
+    filieres:     0,
+    parcours:     0,
+    inscriptions: 0,
+  });
 
-  const stats = [
-    { label: 'Étudiants',    value: '0', icon: 'people' },
-    { label: 'Filières',     value: '0', icon: 'book' },
-    { label: 'Parcours',     value: '0', icon: 'diagram-3' },
-    { label: 'Inscriptions', value: '0', icon: 'clipboard-check' },
+  useEffect(() => {
+    const token = getToken();
+    const headers = { Authorization: `Bearer ${token}` };
+
+    Promise.all([
+      fetch('/api/etudiants',  { headers }).then(r => r.json()),
+      fetch('/api/filieres',   { headers }).then(r => r.json()),
+      fetch('/api/parcours',   { headers }).then(r => r.json()),
+    ]).then(([etudiants, filieres, parcours]) => {
+      setStats({
+        etudiants:    Array.isArray(etudiants)    ? etudiants.length    : 0,
+        filieres:     Array.isArray(filieres)     ? filieres.length     : 0,
+        parcours:     Array.isArray(parcours)     ? parcours.length     : 0,
+        inscriptions: 0,
+      });
+    }).catch(() => {});
+  }, []);
+
+  const statCards = [
+    { label: 'Étudiants',    value: stats.etudiants,    icon: 'people' },
+    { label: 'Filières',     value: stats.filieres,     icon: 'book' },
+    { label: 'Parcours',     value: stats.parcours,     icon: 'diagram-3' },
+    { label: 'Inscriptions', value: stats.inscriptions, icon: 'clipboard-check' },
   ];
 
   return (
@@ -24,13 +50,13 @@ export default function AccueilPage() {
 
       {/* Stats */}
       <div className="row g-4 mb-5">
-        {stats.map((stat, idx) => (
+        {statCards.map((stat, idx) => (
           <div key={idx} className="col-6 col-lg-3">
             <div className="stat-card card shadow-sm p-4">
               <div className="d-flex align-items-center justify-content-between">
                 <div>
                   <div className="text-muted small mb-1">{stat.label}</div>
-                  <div className="stat-value fw-bold text-primary">{stat.value}</div>
+                  <div className="stat-value fw-bold text-primary fs-3">{stat.value}</div>
                 </div>
                 <div className="stat-icon">
                   <i className={`bi bi-${stat.icon}`} />

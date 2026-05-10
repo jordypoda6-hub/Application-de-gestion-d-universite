@@ -1,0 +1,9 @@
+.login-wrapper {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Nunito', sans-serif;
+}
+
+.login-card {
+  border-radius: 1rem;
+  border: none;
+}
